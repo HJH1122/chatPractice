@@ -19,13 +19,21 @@ import java.awt.FlowLayout;
 import javax.swing.JButton;
 import javax.swing.JTextArea;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.awt.event.ActionEvent;
 
-public class ChatForm {
+public class ChatClient {
 
 	private JFrame frame;
 	private JTextField tfInput;
 	private JTextArea taChat;
+	private BufferedWriter out;
 	
 	
 	
@@ -48,8 +56,9 @@ public class ChatForm {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					ChatForm window = new ChatForm();
-					window.frame.setVisible(true);
+					ChatClient chatClient = new ChatClient();
+					chatClient.frame.setVisible(true);
+					new Thread(() -> chatClient.runClient()).start();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -62,7 +71,7 @@ public class ChatForm {
 	 * @param title 
 	 * @param myEditor 
 	 */
-	public ChatForm() {		
+	public ChatClient() {		
 		initialize();
 	}
 
@@ -119,14 +128,41 @@ public class ChatForm {
 		
 		frame.getContentPane().add(sp, BorderLayout.CENTER);
 	}
+
+	public void runClient() {
+		Socket socket = null;
+
+		try {
+			socket = new Socket("localhost", 9999);
+
+			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+
+			String inMsg = null;
+			while (true) {
+				inMsg = in.readLine();
+				taChat.append("[서버] : " + inMsg + "\n");
+			}
+
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	private void typeMsg() {
 		
-		String input = tfInput.getText();
-		
-		taChat.append("[msg] : " + input + "\n");
-		tfInput.setText("");
-		tfInput.requestFocus();
+		try {
+			String outMsg = tfInput.getText();
+			out.write(outMsg + "\n");
+			out.flush();
+			taChat.append("[클라이언트] : " + outMsg + "\n");
+			tfInput.setText("");
+			tfInput.requestFocus();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 	}
 
