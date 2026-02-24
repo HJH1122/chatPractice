@@ -82,7 +82,7 @@ public class ChatClient {
 		frame = new JFrame();
 		frame.setTitle("Chat Application");
 		frame.setBounds(100, 100, 450, 507);
-//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		JPanel panel = new JPanel();
 		panel.setBackground(new Color(255, 255, 0));
@@ -157,7 +157,11 @@ public class ChatClient {
 			String outMsg = tfInput.getText();
 			out.write(outMsg + "\n");
 			out.flush();
-			taChat.append("[클라이언트] : " + outMsg + "\n");
+
+			if(outMsg.equalsIgnoreCase("bye")){
+				this.frame.dispose();
+			}
+
 			tfInput.setText("");
 			tfInput.requestFocus();
 		} catch (IOException e) {

@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 
 public class ChatServer {
@@ -135,17 +136,16 @@ public class ChatServer {
 			server = new ServerSocket(9999);
 			taChat.append("서버가 시작되었습니다.\n");
 
-			Socket socket = server.accept();
-			taChat.append("클라이언트가 접속했습니다.\n");
+			ArrayList<ServerThread> threadList = new ArrayList<ServerThread>();
 
-			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-
-			String inMsg = null;
 			while (true) {
-				inMsg = in.readLine();
-				taChat.append("[클라이언트] : " + inMsg + "\n");
+				Socket socket = server.accept();
+				taChat.append("클라이언트가 접속했습니다.\n");
+				ServerThread st = new ServerThread(socket, threadList);
+				threadList.add(st);
+				st.start();
 			}
+
 
 		} catch (IOException e) {
 			e.printStackTrace();
